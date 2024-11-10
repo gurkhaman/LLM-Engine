@@ -10,3 +10,4 @@ langchain
 unstructured[md]
 nltk
 opencv-python
+tomlkit
