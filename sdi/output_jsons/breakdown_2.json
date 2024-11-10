@@ -1,0 +1,11 @@
+{
+    "task": "path-planning",
+    "id": 1,
+    "dep": [
+        0
+    ],
+    "args": {
+        "detection_results": "<resource>-0",
+        "output_topic": "/cmd_vel"
+    }
+}

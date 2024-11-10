@@ -15,16 +15,19 @@
 # Functional Requirements
 
 ## FR-001: Emergency Vehicle Recognition
-- **Description**: The system shall detect and recognize emergency vehicles.
-- **Input**: Image stream from `/camera/image_raw`.
-- **Output**: Classification of the detected vehicle as an emergency vehicle with a confidence level above 95%.
+- **Description**: The Turtlebot must identify emergency vehicles, such as ambulances and fire trucks, in its surroundings.
+- **Input**: Video feed from the onboard camera from `/camera/image_raw`.
+- **Output**: Identification of emergency vehicles with high accuracy (above 95% confidence)
+
+
 
 ## FR-002: Path Alteration
-- **Description**: Upon detecting an emergency vehicle, the Turtlebot shall automatically alter its path.
-- **Input**: Detection result from the emergency vehicle recognition module.
-- **Output**: Commands sent to the motion controller via `/cmd_vel`.
+- **Description**: Upon recognizing an emergency vehicle, the Turtlebot shall alter its path to clear the way.
+- **Input**: Emergency vehicle detection results. 
+- **Output**: Real-time motion commands sent to `/cmd_vel` for collision-free path planning.
 
 # Non-Functional Requirements
 
 ## NFR-001: Processing Time
-- **Description**: The system shall process and react within 300ms.
+- **Description**: The system must process inputs and respond to emergency vehicle detection within 300ms.
+- **Remarks**: Efficient processing may involve offloading tasks to external services to address onboard resource constraints.

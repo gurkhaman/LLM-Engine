@@ -1,0 +1,10 @@
+{
+    "task": "object-detection",
+    "id": 0,
+    "dep": [
+        -1
+    ],
+    "args": {
+        "image": "/camera/image_raw"
+    }
+}
