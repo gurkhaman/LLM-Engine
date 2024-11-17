@@ -4,7 +4,7 @@ from PIL import Image
 import torch
 from io import BytesIO
 from fastapi.responses import StreamingResponse
-import base64
+import requests
 
 app = FastAPI()
 
@@ -16,6 +16,8 @@ pipeline = StableDiffusionUpscalePipeline.from_pretrained(
     model_id, torch_dtype=torch.float16
 ).to(device)
 print("Model loaded successfully!")
+
+IMAGE_CLASSIFICATION_URL = ""
 
 
 def load_image(file: UploadFile):
@@ -49,38 +51,57 @@ def image_to_bytes(image: Image):
     return img_byte_arr
 
 
+def forward_to_classification_service(upscaled_image: Image):
+    """
+    Forward the upscaled image to the Image Classification Service.
+    """
+    # Convert the image to bytes
+    img_byte_arr = BytesIO()
+    upscaled_image.save(img_byte_arr, format="PNG")
+    img_byte_arr.seek(0)
+
+    # Send the image to the classification service
+    try:
+        response = requests.post(
+            IMAGE_CLASSIFICATION_URL,
+            files={"file": ("upscaled_image.png", img_byte_arr.getvalue())},
+        )
+        print(f"Classification Service Response: {response.status_code}, {response.json()}")
+        return response.json()
+    except Exception as e:
+        raise RuntimeError(f"Failed to forward image to classification service: {str(e)}")
+
+
 ### MAIN ENDPOINT ###
 
 
 @app.post("/upscale/")
 async def upscale_image(file: UploadFile = File(...)):
     """
-    Endpoint to upscale a received image and return it as Base64-encoded JSON.
+    Upscale a received image and forward it to the classification service.
     """
     try:
         # Load the low-resolution image
         low_res_image = load_image(file)
+        print("Image loaded successfully.")
 
         # Perform upscaling
         prompt = "a generic vehicle"  # Modify as needed
         upscaled_image = upscale_image_with_pipeline(low_res_image, prompt)
+        print("Image upscaled successfully.")
 
-        # Convert upscaled image to bytes
-        img_byte_arr = image_to_bytes(upscaled_image)
+        # Forward upscaled image to classification service
+        classification_response = forward_to_classification_service(upscaled_image)
 
-        # Encode image bytes as Base64
-        img_base64 = base64.b64encode(img_byte_arr.getvalue()).decode("utf-8")
-
-        # Return Base64-encoded JSON
         return {
             "status": "success",
-            "message": "Image upscaled successfully.",
-            "image_base64": img_base64
+            "message": "Image upscaled and forwarded to classification service.",
+            "classification_response": classification_response,
         }
 
     except ValueError as ve:
         return {"status": "error", "message": f"Image loading error: {str(ve)}"}
     except RuntimeError as re:
-        return {"status": "error", "message": f"Upscaling error: {str(re)}"}
+        return {"status": "error", "message": f"Processing error: {str(re)}"}
     except Exception as e:
         return {"status": "error", "message": f"Unexpected error: {str(e)}"}
