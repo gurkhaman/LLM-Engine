@@ -11,8 +11,7 @@ print("Loading the upscaling model...")
 model_id = "stabilityai/stable-diffusion-x4-upscaler"
 pipeline = StableDiffusionUpscalePipeline.from_pretrained(
     model_id, torch_dtype=torch.float16
-)
-pipeline = pipeline.to(device)
+).to(device)
 print("Model loaded successfully!")
 
 
