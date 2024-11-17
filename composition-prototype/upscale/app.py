@@ -3,10 +3,13 @@ from diffusers import StableDiffusionUpscalePipeline
 from PIL import Image
 import torch
 from io import BytesIO
+from fastapi.responses import StreamingResponse
+import base64
 
 app = FastAPI()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device selected: ", device)
 print("Loading the upscaling model...")
 model_id = "stabilityai/stable-diffusion-x4-upscaler"
 pipeline = StableDiffusionUpscalePipeline.from_pretrained(
@@ -52,27 +55,27 @@ def image_to_bytes(image: Image):
 @app.post("/upscale/")
 async def upscale_image(file: UploadFile = File(...)):
     """
-    Endpoint to upscale a received image.
-    Accepts a low-resolution image, upscales it, and returns the result.
+    Endpoint to upscale a received image and return it as Base64-encoded JSON.
     """
     try:
         # Load the low-resolution image
         low_res_image = load_image(file)
-        print("Image loaded successfully.")
 
         # Perform upscaling
-        prompt = "a generic vehicle"
+        prompt = "a generic vehicle"  # Modify as needed
         upscaled_image = upscale_image_with_pipeline(low_res_image, prompt)
-        print("Image upscaled successfully.")
 
-        # Convert upscaled image to bytes for returning
+        # Convert upscaled image to bytes
         img_byte_arr = image_to_bytes(upscaled_image)
 
-        # Return the image as bytes
+        # Encode image bytes as Base64
+        img_base64 = base64.b64encode(img_byte_arr.getvalue()).decode("utf-8")
+
+        # Return Base64-encoded JSON
         return {
             "status": "success",
             "message": "Image upscaled successfully.",
-            "image_bytes": img_byte_arr.getvalue(),
+            "image_base64": img_base64
         }
 
     except ValueError as ve:
