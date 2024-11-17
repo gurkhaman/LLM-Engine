@@ -3,3 +3,4 @@ transformers
 uvicorn
 pillow
 requests
+python-multipart

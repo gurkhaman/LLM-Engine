@@ -99,6 +99,10 @@ async def classify(file: UploadFile = File(...)):
                     "confidence": round(score.item(), 3),
                     "bounding_box": [round(i, 2) for i in box.tolist()]
                 }
+            else:
+                notify_object_detection_service({
+                    "message": "Ambulance not detected"
+                })
 
         # If no ambulance was detected
         return {"status": "success", "message": "No ambulance detected."}
